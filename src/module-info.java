@@ -1,0 +1,3 @@
+module DistributionOfOpenSpaces {
+	requires gson;
+}
