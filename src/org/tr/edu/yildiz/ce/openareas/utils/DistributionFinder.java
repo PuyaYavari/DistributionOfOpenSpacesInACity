@@ -13,5 +13,6 @@ public class DistributionFinder {
 		CartesianConverter converter = new CartesianConverter();
 		System.out.println(converter.convertBuildingCornersToMeters(parser.findObjectCorners(buildingsList.get(0))));
 		System.out.println("Map boundaries in lat. and long. "+parser.getBoundaries(data));
+		System.out.println("Map boundaries in meters. "+converter.convertBorders(parser.getBoundaries(data)));
 	}
 }
