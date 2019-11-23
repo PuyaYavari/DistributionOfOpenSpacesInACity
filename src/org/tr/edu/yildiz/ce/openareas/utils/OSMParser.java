@@ -56,8 +56,12 @@ public class OSMParser {
 		return boundaries;
 	}
 
-	public List<List<List<Double>>> findObjectCorners(JsonObject object) {
-		List<List<List<Double>>> objectCorners = new ArrayList<List<List<Double>>>();
+	/**
+	 * @param object: a JsonObject of the building
+	 * @return building data based on longitude and latitude.
+	 */
+	public List<List<List<Double>>> findBuildingCorners(JsonObject object) {
+		List<List<List<Double>>> buildingCorners = new ArrayList<List<List<Double>>>();
 		try {
 			object.get("geometry").getAsJsonObject().get("coordinates").getAsJsonArray().forEach(piece -> {
 				JsonArray buildingPiece = piece.getAsJsonArray();
@@ -65,12 +69,25 @@ public class OSMParser {
 					JsonArray buildingCorner = corner.getAsJsonArray();
 					Double x = buildingCorner.get(0).getAsDouble();
 					Double y = buildingCorner.get(1).getAsDouble();
-					objectCorners.add(Arrays.asList(Arrays.asList(x, y)));
+					buildingCorners.add(Arrays.asList(Arrays.asList(x, y)));
 				});
 			});
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return objectCorners;
+		return buildingCorners;
+	}
+	
+	
+	/**
+	 * @param objects: A list of JsonObjects of buildings.
+	 * @return List of all buildings based on longitude and latitude.
+	 */
+	public List<List<List<List<Double>>>> findAllBuildingsCorners(List<JsonObject> objects) {
+		List<List<List<List<Double>>>> buildings = new ArrayList<List<List<List<Double>>>>();
+		objects.forEach(object -> {
+			buildings.add(findBuildingCorners(object));
+		});
+		return buildings;
 	}
 }
