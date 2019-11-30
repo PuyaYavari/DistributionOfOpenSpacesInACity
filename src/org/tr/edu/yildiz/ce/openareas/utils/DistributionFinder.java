@@ -9,15 +9,18 @@ public class DistributionFinder {
 	
 	public void execute(String path) throws Exception {
 		OSMParser parser = new OSMParser();
-		CartesianConverter converter = new CartesianConverter();
 		
 		String data = parser.readFileAsString(path);
 		
 		List<JsonObject> buildingsObjectList = parser.findBuildings(data);
 		List<List<List<List<Double>>>> buildingDataList = parser.findAllBuildingsCorners(buildingsObjectList);
-		List<Building> buildings = converter.convertAllBuildingsToMeters(buildingDataList);
+		
 		
 		List<Double> borders = parser.getBoundaries(data);
+		
+		CartesianConverter converter = new CartesianConverter(borders.get(0), borders.get(1), borders.get(2), borders.get(3));
+		
+		List<Building> buildings = converter.convertAllBuildingsToMeters(buildingDataList);
 		borders = converter.convertBorders(borders);
 		
 		OverlapCalculator calculator = new OverlapCalculator(buildings);

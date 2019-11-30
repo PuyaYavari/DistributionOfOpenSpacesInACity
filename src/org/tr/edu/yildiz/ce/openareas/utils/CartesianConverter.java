@@ -4,24 +4,57 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
 public class CartesianConverter {
-	double earthRadius = 6371000;
+	double northLat, southLath, westLong, eastLong;
 	
+	public CartesianConverter(Double west, Double south, Double east, Double north) {
+		this.northLat = north;
+		this.southLath = south;
+		this.westLong = west;
+		this.eastLong = east;
+	}
+
 	/**
 	 * @param longitude
 	 * @param latitude
 	 * @return a list of x,y coordinates in meters
 	 */
 	public CartesianCoordinate convertToMeters(Double longitude, Double latitude) {
-		Double x = earthRadius * Math.cos(latitude) * Math.cos(longitude);
-		Double y = earthRadius * Math.cos(latitude) * Math.sin(longitude);
+		Double x = convertX(longitude);
+		Double y = convertY(latitude);
 		return (new CartesianCoordinate(x, y));
 	}
-	
+
 	/**
-	 * @param building: A List of different structures which form a building which is a list of corners that is
-	 * a list of longitude and latitude.
+	 * @param lat1 latitude of first point
+	 * @param lon1 longitude of first point
+	 * @param lat2 latitude of second point
+	 * @param lon2 longitude of second point
+	 * @return distance between given two points in meters
+	 */
+	public Double findCartesianDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
+		Double R = 6378.137; // Radius of earth in KM
+		Double dLat = lat2 * Math.PI / 180 - lat1 * Math.PI / 180;
+		Double dLon = lon2 * Math.PI / 180 - lon1 * Math.PI / 180;
+		Double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180)
+				* Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+		Double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+		Double d = R * c;
+		return d * 1000; // meters
+	}
+
+	private Double convertX(Double longitude) {
+		return findCartesianDistance(northLat, longitude, northLat, westLong);
+	}
+
+	private Double convertY(Double latitude) {
+		return findCartesianDistance(latitude, westLong, northLat, westLong);
+	}
+
+	/**
+	 * @param building: A List of different structures which form a building which
+	 *                  is a list of corners that is a list of longitude and
+	 *                  latitude.
 	 * @return The Building object corresponding to the input.
 	 */
 	public Building convertBuildingCornersToMeters(List<List<List<Double>>> building) {
@@ -35,7 +68,7 @@ public class CartesianConverter {
 		});
 		return (new Building(buildingInMeters));
 	}
-	
+
 	/**
 	 * @param buildings: A list of buildings in longitude and latitude.
 	 * @return A list of building objects corresponding to input.
@@ -47,14 +80,12 @@ public class CartesianConverter {
 		});
 		return buildingsInMeter;
 	}
-	
+
 	/**
 	 * @param borders
 	 * @return [left,bottom,right,top] in meters
 	 */
 	public List<Double> convertBorders(List<Double> borders) {
-		CartesianCoordinate upperLeft = convertToMeters(borders.get(0), borders.get(3));
-		CartesianCoordinate lowerRight = convertToMeters(borders.get(2), borders.get(1));
-		return Arrays.asList(upperLeft.getX(), lowerRight.getY(), lowerRight.getX(), upperLeft.getY());
+		return Arrays.asList(0.0, convertY(borders.get(1)), convertX(borders.get(2)), 0.0);
 	}
 }

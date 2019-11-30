@@ -41,6 +41,7 @@ public class OSMParser {
 				// e.printStackTrace();
 			}
 		});
+		System.out.println("List of buildings found:" + buildingsList);
 		return buildingsList;
 	}
 
@@ -61,24 +62,40 @@ public class OSMParser {
 	 * @return building data based on longitude and latitude.
 	 */
 	public List<List<List<Double>>> findBuildingCorners(JsonObject object) {
-		List<List<List<Double>>> buildingCorners = new ArrayList<List<List<Double>>>();
+		List<List<List<Double>>> building = new ArrayList<List<List<Double>>>();
 		try {
-			object.get("geometry").getAsJsonObject().get("coordinates").getAsJsonArray().forEach(piece -> {
-				JsonArray buildingPiece = piece.getAsJsonArray();
-				buildingPiece.forEach(corner -> {
-					JsonArray buildingCorner = corner.getAsJsonArray();
-					Double x = buildingCorner.get(0).getAsDouble();
-					Double y = buildingCorner.get(1).getAsDouble();
-					buildingCorners.add(Arrays.asList(Arrays.asList(x, y)));
-				});
+			JsonObject geometry = object.get("geometry").getAsJsonObject();
+			String buildingType = geometry.get("type").getAsString();
+			geometry.get("coordinates").getAsJsonArray().forEach(build -> {
+				if (buildingType.equals("MultiPolygon")) {
+					build.getAsJsonArray().forEach(piece -> {
+						List<List<Double>> structure = new ArrayList<List<Double>>();
+						JsonArray buildingPiece = piece.getAsJsonArray();
+						buildingPiece.forEach(corner -> {
+							JsonArray buildingCorner = corner.getAsJsonArray();
+							Double x = buildingCorner.get(0).getAsDouble();
+							Double y = buildingCorner.get(1).getAsDouble();
+							structure.add(Arrays.asList(x, y));
+						});
+						building.add(structure);
+					});
+				} else {
+					List<List<Double>> structure = new ArrayList<List<Double>>();
+					build.getAsJsonArray().forEach(corner -> {
+						JsonArray buildingCorner = corner.getAsJsonArray();
+						Double x = buildingCorner.get(0).getAsDouble();
+						Double y = buildingCorner.get(1).getAsDouble();
+						structure.add(Arrays.asList(x, y));
+					});
+					building.add(structure);
+				}
 			});
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return buildingCorners;
+		return building;
 	}
-	
-	
+
 	/**
 	 * @param objects: A list of JsonObjects of buildings.
 	 * @return List of all buildings based on longitude and latitude.

@@ -3,6 +3,7 @@ package org.tr.edu.yildiz.ce.openareas.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.util.GeometricShapeFactory;
@@ -24,13 +25,13 @@ public class OverlapCalculator {
 				structure.getCorners().forEach(corner -> {
 					Boolean horizontalOverlap = false;
 					Boolean verticalOverlap = false;
-					System.out.println(position.getX() + " , " + position.getY());
+//					System.out.println(position.getX() + " , " + position.getY());
 					if (corner.getX() < (position.getX() + radius) && corner.getX() > (position.getX() - radius)) 
 						horizontalOverlap = true;
 					if (corner.getY() < (position.getY() + radius) && corner.getY() > (position.getY() - radius)) 
 						verticalOverlap = true;
 					if (horizontalOverlap && verticalOverlap) {
-						System.out.println("OVERLAP!!");
+//						System.out.println("OVERLAP!!");
 						overlap = true;
 					}
 				});
@@ -53,8 +54,12 @@ public class OverlapCalculator {
 		
 		GeometryFactory gf = new GeometryFactory();
 		overlappingStructures.forEach(structure -> {
-			Polygon structurePolygon = gf.createPolygon(structure.getCornersCoordinates());
+			Coordinate[] structureCorners = structure.getCornersCoordinatesArray();
+			Polygon structurePolygon = gf.createPolygon(structureCorners);
 			System.out.println("Building: " + structurePolygon.toString());
+			Double intersectionArea = structurePolygon.intersection(circle).getArea();
+			System.out.println("Intersection area:" + intersectionArea);
+			System.out.println("Intersection percentage:" + (intersectionArea/circle.getArea())*100);
 		});
 		
 		return overlapArea;
