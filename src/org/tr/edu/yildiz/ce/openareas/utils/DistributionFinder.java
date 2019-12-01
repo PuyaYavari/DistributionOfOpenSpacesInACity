@@ -6,35 +6,14 @@ import java.util.List;
 import com.google.gson.JsonObject;
 
 public class DistributionFinder {
-	
-	public void execute(String path) throws Exception {
-		OSMParser parser = new OSMParser();
-		
-		String data = parser.readFileAsString(path);
-		
-		List<JsonObject> buildingsObjectList = parser.findBuildings(data);
-		List<List<List<List<Double>>>> buildingDataList = parser.findAllBuildingsCorners(buildingsObjectList);
-		
-		
-		List<Double> borders = parser.getBoundaries(data);
-		
-		CartesianConverter converter = new CartesianConverter(borders.get(0), borders.get(1), borders.get(2), borders.get(3));
-		
-		List<Building> buildings = converter.convertAllBuildingsToMeters(buildingDataList);
-		borders = converter.convertBorders(borders);
-		
-		OverlapCalculator calculator = new OverlapCalculator(buildings);
-		
-		slidePoligon(borders, calculator, new SlidingCircularPolygon(1.0));
-	}
-	
-	private List<Double> slidePoligon(List<Double> borders, OverlapCalculator calculator, SlidingCircularPolygon polygon) {
+
+	public List<Double> execute(List<Double> borders, OverlapCalculator calculator, SlidingCircularPolygon polygon) {
 		Double slideHStart = 0.0;
 		Double slideHEnd = 0.0;
 		Double slideVStart = 0.0;
 		Double slideVEnd = 0.0;
 		Double radius = polygon.getRadius();
-		
+
 		if (borders.get(0) > borders.get(2)) {
 			slideHStart = borders.get(2) - radius;
 			slideHEnd = borders.get(0) + radius;
@@ -49,13 +28,15 @@ public class DistributionFinder {
 			slideVStart = borders.get(1) - radius;
 			slideVEnd = borders.get(3) + radius;
 		}
-		
+
 		List<Double> intersections = new ArrayList<Double>();
 		Double HPosition = slideHStart;
 		Double VPosition = slideVStart;
 		while (VPosition < slideVEnd) {
 			while (HPosition < slideHEnd) {
-				intersections.add(calculator.findOverlappingArea(new CartesianCoordinate(HPosition, VPosition), polygon));
+				Double intersectionPercentage = calculator
+						.findFilledAreaPercentage(new CartesianCoordinate(HPosition, VPosition), polygon);
+				intersections.add(intersectionPercentage);
 				HPosition += 1;
 			}
 			VPosition += 1;

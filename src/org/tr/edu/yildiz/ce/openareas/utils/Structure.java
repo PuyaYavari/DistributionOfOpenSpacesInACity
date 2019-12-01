@@ -3,6 +3,8 @@ package org.tr.edu.yildiz.ce.openareas.utils;
 import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Polygon;
 
 public class Structure {
 	private List<CartesianCoordinate> corners;
@@ -26,5 +28,11 @@ public class Structure {
 		} else {
 			return new Coordinate[0];
 		}
+	}
+	
+	public Polygon getAsPolygon() {
+		GeometryFactory gf = new GeometryFactory();
+		Polygon structurePolygon = gf.createPolygon(getCornersCoordinatesArray());
+		return structurePolygon;
 	}
 }
