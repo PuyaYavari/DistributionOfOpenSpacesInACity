@@ -79,7 +79,7 @@ public class OSMParser {
 						});
 						building.add(structure);
 					});
-				} else {
+				} else if (buildingType.equals("Polygon")) {
 					List<List<Double>> structure = new ArrayList<List<Double>>();
 					build.getAsJsonArray().forEach(corner -> {
 						JsonArray buildingCorner = corner.getAsJsonArray();
@@ -88,6 +88,8 @@ public class OSMParser {
 						structure.add(Arrays.asList(x, y));
 					});
 					building.add(structure);
+				} else {
+					System.out.println("Unknown type:" + geometry.get("type").getAsString());
 				}
 			});
 		} catch (Exception e) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.util.GeometricShapeFactory;
@@ -17,7 +18,7 @@ public class OverlapCalculator {
 
 	/**
 	 * @param position position The current position of the circular polygon.
-	 * @param polygon Current circular polygon.
+	 * @param polygon  Current circular polygon.
 	 * @return A list of all the intersecting structures with the polygon.
 	 */
 	private List<Structure> findIntersectingStructures(CartesianCoordinate position, SlidingCircularPolygon polygon) {
@@ -36,32 +37,39 @@ public class OverlapCalculator {
 		return intersectingStructures;
 	}
 
-	
 	/**
 	 * @param position The current position of the circular polygon.
-	 * @param polygon Current circular polygon.
-	 * @return Percentage of the are of the circular polygon that is filled with structures.
+	 * @param polygon  Current circular polygon.
+	 * @return Percentage of the are of the circular polygon that is filled with
+	 *         structures.
 	 */
 	public Double findFilledAreaPercentage(CartesianCoordinate position, SlidingCircularPolygon polygon) {
-		Double totalIntersectionArea = 0.0;
-		List<Structure> intersectingStructures = findIntersectingStructures(position, polygon);
+		try {
+			Double totalIntersectionArea = 0.0;
+			List<Structure> intersectingStructures = findIntersectingStructures(position, polygon);
 
-		GeometricShapeFactory sf = new GeometricShapeFactory();
-		sf.setSize(polygon.getRadius() * 2);
-		sf.setCentre(position.getCoordinate());
-		Polygon circle = sf.createCircle();
+			GeometricShapeFactory sf = new GeometricShapeFactory();
+			sf.setSize(polygon.getRadius() * 2);
+			sf.setCentre(position.getCoordinate());
+			Polygon circle = sf.createCircle();
 
-		for (int i = 0; i < intersectingStructures.size(); i++) {
-			Structure structure = intersectingStructures.get(i);
-			Double intersectionArea = structure.getAsPolygon().intersection(circle).getArea();
-			totalIntersectionArea += intersectionArea;
+			for (int i = 0; i < intersectingStructures.size(); i++) {
+				Polygon structurePolygon = intersectingStructures.get(i).getAsPolygon();
+				Geometry intersectionGeometry = structurePolygon.intersection(circle);
+				Double intersectionArea = intersectionGeometry.getArea();
+				totalIntersectionArea += intersectionArea;
+			}
+
+			Double totalIntersectionPercentage = totalIntersectionArea / circle.getArea();
+			
+			if (totalIntersectionPercentage <= 1.0) {
+//				System.out.println(totalIntersectionPercentage);
+				return totalIntersectionPercentage;
+			} else {
+				return 1.0;
+			}
+		} catch (Exception e) {
+			return 0.0;
 		}
-		
-		Double totalIntersectionPercentage = totalIntersectionArea / circle.getArea();
-		
-		if(totalIntersectionPercentage <= 1.0)
-			return totalIntersectionPercentage;
-		else
-			return 1.0;
 	}
 }

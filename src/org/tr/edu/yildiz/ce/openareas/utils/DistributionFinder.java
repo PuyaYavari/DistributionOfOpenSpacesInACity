@@ -1,7 +1,9 @@
 package org.tr.edu.yildiz.ce.openareas.utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.google.gson.JsonObject;
 
@@ -43,5 +45,16 @@ public class DistributionFinder {
 			HPosition = slideHStart;
 		}
 		return intersections;
+	}
+	
+	public Map<Double,List<Double>> execute(List<Double> borders, OverlapCalculator calculator, Double start, Double end, Double delta) {
+		Map<Double, List<Double>> outputs = new HashMap<Double, List<Double>>();//TODO: cuncurrent hashmap
+		Double radius = start;//TODO: multithread
+		while(radius <= end) {
+			List<Double> output = execute(borders, calculator, new SlidingCircularPolygon(radius));
+			outputs.put(radius, output);
+			radius += delta;
+		}
+		return outputs;
 	}
 }

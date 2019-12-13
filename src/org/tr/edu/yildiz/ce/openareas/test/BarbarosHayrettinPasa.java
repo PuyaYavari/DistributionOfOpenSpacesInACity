@@ -2,6 +2,7 @@ package org.tr.edu.yildiz.ce.openareas.test;
 
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
 
 import org.tr.edu.yildiz.ce.openareas.utils.Building;
 import org.tr.edu.yildiz.ce.openareas.utils.CartesianConverter;
@@ -35,10 +36,11 @@ public class BarbarosHayrettinPasa {
 		System.out.println(borders);
 
 		DistributionFinder finder = new DistributionFinder();
-		List<Double> output = finder.execute(borders, calculator, new SlidingCircularPolygon(1.0));
+		Map<Double,List<Double>> outputs = finder.execute(borders, calculator, 1.0, 1.0, 1.0);
+		
 		
 		PrintWriter writer = new PrintWriter("/home/puya/Documents/FinalProject/Output/output", "UTF-8");
-		writer.println(output.toString());
+		writer.println(outputs.toString());
 		writer.close();
 	}
 }
