@@ -37,7 +37,7 @@ public class DistributionFinder {
 		while (VPosition < slideVEnd) {
 			while (HPosition < slideHEnd) {
 				Double intersectionPercentage = calculator
-						.findFilledAreaPercentage(new CartesianCoordinate(HPosition, VPosition), polygon);
+						.findEmptyAreaPercentage(new CartesianCoordinate(HPosition, VPosition), polygon);
 				intersections.add(intersectionPercentage);
 				HPosition += 1;
 			}
@@ -47,14 +47,24 @@ public class DistributionFinder {
 		return intersections;
 	}
 	
+	/**
+	 * @param borders A list of map borders in meters
+	 * @param calculator An OverlapCalculator object
+	 * @param start	Minimum radius of the circular polygon
+	 * @param end Maximum radius of the circular polygon
+	 * @param delta Step size of the radius of the circular polygon
+	 * @return A map of Radius to List of Fullness
+	 */
 	public Map<Double,List<Double>> execute(List<Double> borders, OverlapCalculator calculator, Double start, Double end, Double delta) {
-		Map<Double, List<Double>> outputs = new HashMap<Double, List<Double>>();//TODO: cuncurrent hashmap
-		Double radius = start;//TODO: multithread
+		Map<Double, List<Double>> outputs = new HashMap<Double, List<Double>>();
+		Double radius = start;
 		while(radius <= end) {
 			List<Double> output = execute(borders, calculator, new SlidingCircularPolygon(radius));
+			System.out.println(String.format("Outputs for radius %1$,.2f calculated.", radius));
 			outputs.put(radius, output);
 			radius += delta;
 		}
+		
 		return outputs;
 	}
 }

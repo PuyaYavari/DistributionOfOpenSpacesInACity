@@ -43,7 +43,7 @@ public class OverlapCalculator {
 	 * @return Percentage of the are of the circular polygon that is filled with
 	 *         structures.
 	 */
-	public Double findFilledAreaPercentage(CartesianCoordinate position, SlidingCircularPolygon polygon) {
+	public Double findEmptyAreaPercentage(CartesianCoordinate position, SlidingCircularPolygon polygon) {
 		try {
 			Double totalIntersectionArea = 0.0;
 			List<Structure> intersectingStructures = findIntersectingStructures(position, polygon);
@@ -63,10 +63,9 @@ public class OverlapCalculator {
 			Double totalIntersectionPercentage = totalIntersectionArea / circle.getArea();
 			
 			if (totalIntersectionPercentage <= 1.0) {
-//				System.out.println(totalIntersectionPercentage);
-				return totalIntersectionPercentage;
+				return 1.0 - totalIntersectionPercentage;
 			} else {
-				return 1.0;
+				return 0.0;
 			}
 		} catch (Exception e) {
 			return 0.0;

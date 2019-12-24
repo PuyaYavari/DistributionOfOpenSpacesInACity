@@ -1,6 +1,7 @@
 package org.tr.edu.yildiz.ce.openareas.utils;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -23,107 +24,57 @@ public class MatlabSession {
 		MatlabProxyFactoryOptions options = builder.build();
 		MatlabProxyFactory factory = new MatlabProxyFactory(options);
 		this._proxy = factory.getProxy();
-		System.out.println("MAtlab OK");
+		System.out.println("MAtlab session created successfuly.");
 	}
 	
-	//region DEFINITIONS
-	
-	public boolean define(String name, int value) {
-		try {
-			_proxy.setVariable(name, value);
-			return true;
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-			return false;
-		}
+	public void close() throws MatlabInvocationException {
+		_proxy.exit();
 	}
-	
-	public boolean define(String name, float value) {
-		try {
-			_proxy.setVariable(name, value);
-			return true;
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
-	public boolean define(String name, double value) {
-		try {
-			_proxy.setVariable(name, value);
-			return true;
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
-	public boolean define(String name, List<Double> value) {
-		try {
-			_proxy.setVariable(name, value);
-			return true;
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
-	public boolean define(String name, Map<Double, List<Double>> value) {
-		try {
-			_proxy.setVariable(name, value);
-			return true;
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
-	public boolean define(String name, int[] value) {
-		try {
-			_proxy.setVariable(name, value);
-			return true;
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
-	//end region DEFINITIONS
+
 	//region HISTOGRAM
 	
-	public boolean histogram(String fieldName) {
+	public <T> boolean saveHistogram(List<T> value, String directoryName, String fileName, String extention) {
 		try {
-			_proxy.eval(String.format("hist(%s)", fieldName));
-			return true;
+			_proxy.setVariable("x", listToArray((List<Double>) value));
+			_proxy.eval("[PDF, CDF, Interval, Delta] = Histogram(x, 100);");
+			if (makeDir(String.format("Histogram/%s", directoryName))) {
+				_proxy.eval("f = figure('visible','off');");
+				_proxy.eval(String.format("saveas(plot(Interval,PDF),'Histogram/%s/%s')", directoryName, String.format("%s_PDF%s", fileName, extention)));
+				_proxy.eval(String.format("saveas(plot(Interval,CDF),'Histogram/%s/%s')", directoryName, String.format("%s_CDF%s", fileName, extention)));
+				_proxy.eval(String.format("saveas(loglog(Interval,PDF),'Histogram/%s/%s')", directoryName, String.format("%s_PDF_loglog%s", fileName, extention)));
+				_proxy.eval(String.format("saveas(loglog(Interval,CDF),'Histogram/%s/%s')", directoryName, String.format("%s_CDF_loglog%s", fileName, extention)));
+				_proxy.eval(String.format("saveas(plot(Interval,PDF),'Histogram/%s/%s')", directoryName, String.format("%s_PDF.fig", fileName, extention)));
+				_proxy.eval(String.format("saveas(plot(Interval,CDF),'Histogram/%s/%s')", directoryName, String.format("%s_CDF.fig", fileName, extention)));
+				
+				return true;
+			} else {
+				return false;
+			}
 		} catch (MatlabInvocationException e) {
 			e.printStackTrace();
 			return false;
 		}
-		
 	}
 	
-	public <T> boolean histogram(List<T> value) {
-		try {
-			_proxy.eval(String.format("hist([%s])", listToString(value)));
-			return true;
-		} catch (MatlabInvocationException e) {
-			e.printStackTrace();
-			return false;
-		}
+	public void saveAllHistograms(Map<Double,List<Double>> values, String directoryName, String extention) {
+		values.forEach((k,v) -> {
+			saveHistogram(v, directoryName, String.format("%smRadius", k.toString()), extention);
+		});
 	}
 	
 	//end region HISTOGRAM
-
 	
-	private <T> String listToString(List<T> value) {
-		String result = "";
-		for(int i = 0; i < value.size(); i++) {
-			if (i == 0) {
-				result = String.format("%s", value.get(i).toString());
-			} else {
-				result = String.format("%s %s", result, value.get(i).toString());
-			}
+	public static double[] listToArray(List<Double> value) {
+		return Arrays.stream(value.toArray(new Double[value.size()])).mapToDouble(Double::doubleValue).toArray();
+	}
+	
+	private boolean makeDir(String directoryName) {
+		try {
+			_proxy.eval(String.format("mkdir('%s')", directoryName));
+			return true;
+		} catch (MatlabInvocationException e) {
+			e.printStackTrace();
+			return false;
 		}
-		return result;
 	}
 }

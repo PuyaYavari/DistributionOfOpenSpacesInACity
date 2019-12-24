@@ -41,7 +41,6 @@ public class OSMParser {
 				// e.printStackTrace();
 			}
 		});
-		System.out.println("List of buildings found:" + buildingsList);
 		return buildingsList;
 	}
 
@@ -50,11 +49,41 @@ public class OSMParser {
 	 * @return [left,bottom,right,top]
 	 */
 	public List<Double> getBoundaries(String json) {
-		JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
-		JsonArray boundariesBox = jsonObject.getAsJsonArray("bbox");
-		List<Double> boundaries = Arrays.asList(boundariesBox.get(0).getAsDouble(), boundariesBox.get(1).getAsDouble(),
-				boundariesBox.get(2).getAsDouble(), boundariesBox.get(3).getAsDouble());
-		return boundaries;
+		try {
+			JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+			JsonArray boundariesBox = jsonObject.getAsJsonArray("bbox");
+			List<Double> boundaries = Arrays.asList(boundariesBox.get(0).getAsDouble(),
+					boundariesBox.get(1).getAsDouble(), boundariesBox.get(2).getAsDouble(),
+					boundariesBox.get(3).getAsDouble());
+			return boundaries;
+		} catch (Exception e) {
+			try {
+				List<Double> boundaries = Arrays.asList(null, null, null, null);
+				List<List<List<List<Double>>>> buildingDataList = findAllBuildingsCorners(findBuildings(json));
+				for(List<List<List<Double>>> building: buildingDataList) {
+					for(List<List<Double>> structure: building) {
+						for(List<Double> corner: structure) {
+							if(corner.get(0) > boundaries.get(0) || boundaries.get(0) == null) {
+								boundaries.set(0, corner.get(0));
+							}
+							if(corner.get(2) < boundaries.get(0) || boundaries.get(0) == null) {
+								boundaries.set(2, corner.get(0));
+							}
+							if(corner.get(1) > boundaries.get(1) || boundaries.get(1) == null) {
+								boundaries.set(1, corner.get(1));
+							}
+							if(corner.get(3) < boundaries.get(1) || boundaries.get(1) == null) {
+								boundaries.set(3, corner.get(1));
+							}
+						}
+					}
+				}
+				return boundaries;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				return null;
+			}
+		}
 	}
 
 	/**
