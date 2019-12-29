@@ -35,7 +35,7 @@ public class DistributionHistogramDrawer {
 			OverlapCalculator calculator = new OverlapCalculator(buildings);
 
 			DistributionFinder finder = new DistributionFinder();
-			Map<Double, List<Double>> outputs = finder.executeFibo(borders, calculator);
+			Map<Double, List<Double>> outputs = finder.execute(borders, calculator, minCircleRadius, maxCircleRadius, delta);
 			System.out.println("Intersection distributions calculated.");
 
 			MatlabSession matlab = new MatlabSession("/home/puya/Documents/FinalProject/Output/Matlab/", true);
