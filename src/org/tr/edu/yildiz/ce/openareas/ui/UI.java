@@ -46,8 +46,9 @@ public class UI extends JApplet {
 		MultiModeSequence multiModes[] = { new MultiModeSequence("Linear Sequence", true),
 				new MultiModeSequence("Fibonacci Sequence", false) };
 		JComboBox<MultiModeSequence> multiModesCB = new JComboBox<MultiModeSequence>(multiModes);
+		JCheckBox isRandom = new JCheckBox("Evaluate for random points.");
 		JButton confirm = new JButton("CONFIRM");
-		JTextField output = new JTextField();
+		JTextArea output = new JTextArea();
 
 		selectButton.setBounds(10, 10, 84, 32);// x axis, y axis, width, height
 		selectButton.setFont(new Font(selectButton.getFont().getName(), Font.PLAIN, 12));
@@ -67,6 +68,8 @@ public class UI extends JApplet {
 					singleModeButton.setEnabled(true);
 					multiModeButton.setEnabled(true);
 					radioPanel.setEnabled(true);
+					output.setText(String.format("Outputs will be saved to '%sOutputs/Matlab/Histogram/%s'",
+							path.substring(0, (path.length() - (dirName.length() + 13))), dirName));
 				}
 			}
 		});
@@ -95,6 +98,7 @@ public class UI extends JApplet {
 				toLabel.setEnabled(false);
 				deltaTextField.setEnabled(false);
 				deltaLabel.setEnabled(false);
+				isRandom.setEnabled(true);
 			}
 		});
 		multiModeButton.setFont(new Font(selectButton.getFont().getName(), Font.PLAIN, 12));
@@ -108,6 +112,7 @@ public class UI extends JApplet {
 				radiusTextField.setEnabled(false);
 				multiModePanel.setEnabled(true);
 				multiModesCB.setEnabled(true);
+				isRandom.setEnabled(true);
 				MultiModeSequence selected = (MultiModeSequence) multiModesCB.getSelectedItem();
 				if (selected.isInputEnabled) {
 					fromTextField.setEnabled(true);
@@ -246,18 +251,21 @@ public class UI extends JApplet {
 		multiModePanel.setBounds(205, 104, 185, 120);
 		multiModePanel.setEnabled(false);
 
-		confirm.setBounds(10, 230, 380, 40);
+		isRandom.setBounds(10, 230, 380, 40);
+		isRandom.setEnabled(false);
+		
+		confirm.setBounds(10, 270, 380, 40);
 		confirm.setEnabled(false);
 		confirm.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				boolean randomPoints = isRandom.isSelected();
 				if (singleModeButton.isSelected()) {
 					if (!radiusTextField.getText().equals("")) {
 						confirm.setEnabled(false);
-						output.setText(String.format("Outputs will be saved to %s/Outputs/Matlab/Histogram/%s",path.substring(0, dirName.length()+13),dirName));
 						double radius = Double.parseDouble(radiusTextField.getText());
-						DistributionHistogramDrawer.evaluate(path, radius, radius, 1.0, dirName, ".jpg");
+						DistributionHistogramDrawer.evaluate(path, radius, radius, 1.0, dirName, ".jpg", randomPoints);
 						frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					} else {
 						output.setText("Fill Radius field please.\n");
@@ -271,7 +279,7 @@ public class UI extends JApplet {
 							double fromRadius = Double.parseDouble(fromTextField.getText());
 							double toRadius = Double.parseDouble(toTextField.getText());
 							double delta = Double.parseDouble(deltaTextField.getText());
-							DistributionHistogramDrawer.evaluate(path, fromRadius, toRadius, delta, dirName, ".jpg");
+							DistributionHistogramDrawer.evaluate(path, fromRadius, toRadius, delta, dirName, ".jpg", randomPoints);
 							frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 						} else {
 							output.setText("");
@@ -283,21 +291,24 @@ public class UI extends JApplet {
 								output.setText(output.getText() + "Fill Delta field please.\n");
 						}
 					} else {
-						DistributionHistogramDrawer.evaluate(path, dirName, ".jpg");
+						DistributionHistogramDrawer.evaluate(path, dirName, ".jpg", randomPoints);
 					}
 				}
 			}
 		});
 
-		output.setBounds(10, 280, 380, 210);
+		output.setBounds(10, 320, 380, 170);
 		output.setBackground(Color.WHITE);
 		output.setEditable(false);
+		output.setLineWrap(true);
+		output.setWrapStyleWord(true);
 
 		frame.add(selectButton);
 		frame.add(selectedLabel);
 		frame.add(radioPanel);
 		frame.add(singleModePanel);
 		frame.add(multiModePanel);
+		frame.add(isRandom);
 		frame.add(confirm);
 		frame.add(output);
 

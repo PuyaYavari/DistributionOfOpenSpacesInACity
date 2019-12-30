@@ -1,7 +1,5 @@
 package org.tr.edu.yildiz.ce.openareas.utils;
 
-import java.io.File;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -9,7 +7,7 @@ import com.google.gson.JsonObject;
 
 public class DistributionHistogramDrawer {
 	public static void evaluate(String path, double minCircleRadius, double maxCircleRadius, double delta,
-			String dirName, String extention) {
+			String dirName, String extention, boolean isRandom) {
 		try {
 			OSMParser parser = new OSMParser();
 
@@ -35,7 +33,7 @@ public class DistributionHistogramDrawer {
 			OverlapCalculator calculator = new OverlapCalculator(buildings);
 
 			DistributionFinder finder = new DistributionFinder();
-			Map<Double, List<Double>> outputs = finder.execute(borders, calculator, minCircleRadius, maxCircleRadius, delta);
+			Map<Double, List<Double>> outputs = finder.execute(borders, calculator, minCircleRadius, maxCircleRadius, delta, isRandom);
 			System.out.println("Intersection distributions calculated.");
 
 			MatlabSession matlab = new MatlabSession("/home/puya/Documents/FinalProject/Output/Matlab/", true);
@@ -47,7 +45,7 @@ public class DistributionHistogramDrawer {
 		}
 	}
 	
-	public static void evaluate(String path, String dirName, String extention) {
+	public static void evaluate(String path, String dirName, String extention, boolean isRandom) {
 		try {
 			OSMParser parser = new OSMParser();
 
@@ -73,7 +71,7 @@ public class DistributionHistogramDrawer {
 			OverlapCalculator calculator = new OverlapCalculator(buildings);
 
 			DistributionFinder finder = new DistributionFinder();
-			Map<Double, List<Double>> outputs = finder.executeFibo(borders, calculator);
+			Map<Double, List<Double>> outputs = finder.executeFibo(borders, calculator, isRandom);
 			System.out.println("Intersection distributions calculated.");
 
 			MatlabSession matlab = new MatlabSession("/home/puya/Documents/FinalProject/Output/Matlab/", true);
